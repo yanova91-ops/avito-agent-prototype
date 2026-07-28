@@ -1,0 +1,15 @@
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  base: './',
+  define: {
+    process: JSON.stringify({
+      env: {
+        NODE_ENV: 'development',
+        CDN_STATIC_URL: 'https://www.avito.st',
+      },
+    }),
+  },
+});
