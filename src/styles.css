@@ -195,6 +195,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 12px; width: 100%; }
 .handoff-grid { display: grid; grid-template-columns: 1fr .85fr; gap: 32px; align-items: start; }
 .handoff-list { overflow: hidden; border: 1px solid var(--theme-semantics-border-default); border-radius: 16px; }
+.handoff-list--single { max-width: 760px; }
 .handoff-row { min-height: 92px; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 18px 20px; border-bottom: 1px solid var(--theme-semantics-border-default); }
 .handoff-row:last-child { border-bottom: 0; }
 .handoff-copy { min-width: 0; }

@@ -62,35 +62,13 @@ export function App() {
   const [saved, setSaved] = useState(false);
   const [handoffConditions, setHandoffConditions] = useState<HandoffCondition[]>([
     {
-      id: 'ask',
-      title: 'Клиент прямо просит исполнителя',
-      description: 'Например, хочет обсудить детали лично или просит ваш номер',
-      enabled: true,
-    },
-    {
-      id: 'discount',
-      title: 'Нужно согласовать скидку или запись',
-      description: 'Агент не обещает скидку и не подтверждает время без вас',
-      enabled: true,
-    },
-    {
-      id: 'unknown',
-      title: 'Нет подтверждённого ответа',
-      description: 'В источниках агента недостаточно данных, чтобы ответить точно',
-      enabled: true,
-    },
-    {
-      id: 'negative',
-      title: 'Клиент недоволен',
-      description: 'В диалоге появилась претензия или негативная оценка',
+      id: 'decision',
+      title: 'Нужно ваше решение',
+      description:
+        'Согласовать скидку или финальную цену, рассчитать смету либо записать клиента',
       enabled: true,
     },
   ]);
-  const defaultHandoffMessage =
-    'Спасибо! Передаю ваш вопрос исполнителю. Он продолжит общение здесь, в чате.';
-  const [handoffMessage, setHandoffMessage] = useState(defaultHandoffMessage);
-  const [handoffDraft, setHandoffDraft] = useState(defaultHandoffMessage);
-  const [handoffModalOpen, setHandoffModalOpen] = useState(false);
   const [topicAnswers, setTopicAnswers] = useState<Record<string, string>>({
     price:
       'Стоимость услуги — от 3 500 ₽. Точная цена зависит от объёма работ и материалов. Расскажите подробнее о задаче — я помогу рассчитать стоимость.',
@@ -269,7 +247,7 @@ export function App() {
           size="m"
         >
           <TabGroup.Item id="answers" name="Ответы клиентам" />
-          <TabGroup.Item id="handoff" name="Передача мне" />
+          <TabGroup.Item id="handoff" name="Подключение к диалогу" />
 
           <TabGroup.Panel id="answers">
             <section className="content-section">
@@ -397,62 +375,34 @@ export function App() {
           <TabGroup.Panel id="handoff">
             <section className="content-section">
               <div className="section-heading">
-                <H1 spaceBottom="8">Когда агент передаёт диалог вам</H1>
+                <H1 spaceBottom="8">Когда агент зовёт вас в чат</H1>
                 <P color="text/secondary">
-                  Выберите ситуации, в которых агент остановит ответы и позовёт вас в чат
+                  Агент попросит вас подключиться, когда для ответа требуется ваше решение
                 </P>
               </div>
-              <div className="handoff-grid">
-                <div className="handoff-list">
-                  {handoffConditions.map((condition) => (
-                    <div className="handoff-row" key={condition.id}>
-                      <div className="handoff-copy">
-                        <H3 spaceBottom="4">{condition.title}</H3>
-                        <P size="s" color="text/secondary">{condition.description}</P>
-                      </div>
-                      <Switcher
-                        checked={condition.enabled}
-                        onChange={() => {
-                          setHandoffConditions((current) =>
-                            current.map((item) =>
-                              item.id === condition.id
-                                ? { ...item, enabled: !item.enabled }
-                                : item,
-                            ),
-                          );
-                          setSaved(false);
-                        }}
-                        aria-label={condition.title}
-                      />
+              <div className="handoff-list handoff-list--single">
+                {handoffConditions.map((condition) => (
+                  <div className="handoff-row" key={condition.id}>
+                    <div className="handoff-copy">
+                      <H3 spaceBottom="4">{condition.title}</H3>
+                      <P size="s" color="text/secondary">{condition.description}</P>
                     </div>
-                  ))}
-                </div>
-                <div className="handoff-preview">
-                  <div className="preview-heading">
-                    <div>
-                      <H3 spaceBottom="4">Что увидит клиент</H3>
-                      <P size="s" color="text/secondary">Сообщение перед передачей диалога</P>
-                    </div>
-                    <Button
-                      preset="secondary"
-                      size="s"
-                      onClick={() => {
-                        setHandoffDraft(handoffMessage);
-                        setHandoffModalOpen(true);
+                    <Switcher
+                      checked={condition.enabled}
+                      onChange={() => {
+                        setHandoffConditions((current) =>
+                          current.map((item) =>
+                            item.id === condition.id
+                              ? { ...item, enabled: !item.enabled }
+                              : item,
+                          ),
+                        );
+                        setSaved(false);
                       }}
-                    >
-                      Редактировать
-                    </Button>
+                      aria-label={condition.title}
+                    />
                   </div>
-                  <div className="chat-preview">
-                    <div className="message message--buyer">
-                      <P size="s">Можно записаться на субботу и получить скидку?</P>
-                    </div>
-                    <div className="message message--agent">
-                      <P size="s">{handoffMessage}</P>
-                    </div>
-                  </div>
-                </div>
+                ))}
               </div>
             </section>
           </TabGroup.Panel>
@@ -617,58 +567,6 @@ export function App() {
         </Modal.Footer>
       </Modal>
 
-      <Modal
-        open={handoffModalOpen}
-        size="m"
-        onClose={() => setHandoffModalOpen(false)}
-        closeOnOverlayClick
-      >
-        <Modal.Header title="Сообщение клиенту" />
-        <Modal.Content>
-          <div className="modal-form">
-            <label className="field">
-              <Span size="s">Текст сообщения</Span>
-              <textarea
-                className="message-editor"
-                value={handoffDraft}
-                maxLength={300}
-                onChange={(event) => setHandoffDraft(event.target.value)}
-                aria-label="Текст сообщения клиенту"
-              />
-              <div className="field-meta">
-                <Span size="xs" color="text/secondary">
-                  Клиент увидит этот текст перед тем, как вы подключитесь
-                </Span>
-                <Span size="xs" color="text/secondary">{handoffDraft.length} / 300</Span>
-              </div>
-            </label>
-            <div className="message-preview">
-              <Span size="xs" color="text/secondary">Предпросмотр</Span>
-              <div className="message message--agent">
-                <P size="s">{handoffDraft || 'Введите сообщение'}</P>
-              </div>
-            </div>
-          </div>
-        </Modal.Content>
-        <Modal.Footer>
-          <div className="modal-actions">
-            <Button preset="secondary" onClick={() => setHandoffModalOpen(false)}>
-              Отмена
-            </Button>
-            <Button
-              preset="primary"
-              disabled={!handoffDraft.trim()}
-              onClick={() => {
-                setHandoffMessage(handoffDraft.trim());
-                setHandoffModalOpen(false);
-                setSaved(false);
-              }}
-            >
-              Сохранить текст
-            </Button>
-          </div>
-        </Modal.Footer>
-      </Modal>
     </div>
   );
 }
