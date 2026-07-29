@@ -196,6 +196,12 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .handoff-grid { display: grid; grid-template-columns: 1fr .85fr; gap: 32px; align-items: start; }
 .handoff-list { overflow: hidden; border: 1px solid var(--theme-semantics-border-default); border-radius: 16px; }
 .handoff-list--single { max-width: 760px; }
+.custom-handoff { max-width: 760px; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--theme-semantics-border-default); }
+.custom-handoff__heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+.custom-handoff__heading h2 { font-size: 22px; line-height: 27px; white-space: nowrap; }
+.custom-handoff__heading button { flex: 0 0 auto; }
+.custom-handoff-list { margin-top: 16px; }
+.handoff-empty-state { margin-top: 16px; }
 .handoff-row { min-height: 92px; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 18px 20px; border-bottom: 1px solid var(--theme-semantics-border-default); }
 .handoff-row:last-child { border-bottom: 0; }
 .handoff-copy { min-width: 0; }
@@ -325,6 +331,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .empty-state { margin-top: 16px; padding: 20px 16px; }
   .handoff-grid { grid-template-columns: 1fr; }
   .handoff-row { min-height: 0; padding: 16px; }
+  .custom-handoff { margin-top: 22px; padding-top: 22px; }
+  .custom-handoff__heading { flex-direction: column; gap: 14px; }
+  .custom-handoff__heading button { width: 100%; }
   .handoff-preview { padding: 16px; border-radius: 18px; }
   .topic-answer-card { padding: 16px; border-radius: 18px; }
   .preview-heading { align-items: center; }

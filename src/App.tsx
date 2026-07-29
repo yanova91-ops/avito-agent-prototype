@@ -62,13 +62,25 @@ export function App() {
   const [saved, setSaved] = useState(false);
   const [handoffConditions, setHandoffConditions] = useState<HandoffCondition[]>([
     {
-      id: 'decision',
-      title: 'Нужно ваше решение',
+      id: 'price-approval',
+      title: 'Согласовать цену или скидку',
       description:
-        'Согласовать скидку или финальную цену, рассчитать смету либо записать клиента',
+        'Агент позовёт вас, если нужно подтвердить финальную цену, скидку или смету',
+      enabled: true,
+    },
+    {
+      id: 'booking-approval',
+      title: 'Согласовать запись',
+      description:
+        'Агент позовёт вас, чтобы подтвердить клиенту дату и время оказания услуги',
       enabled: true,
     },
   ]);
+  const [customHandoffConditions, setCustomHandoffConditions] = useState<HandoffCondition[]>([]);
+  const [handoffScenarioModalOpen, setHandoffScenarioModalOpen] = useState(false);
+  const [scenarioTitleDraft, setScenarioTitleDraft] = useState('');
+  const [scenarioDescriptionDraft, setScenarioDescriptionDraft] = useState('');
+  const [scenarioEnabledDraft, setScenarioEnabledDraft] = useState(true);
   const [topicAnswers, setTopicAnswers] = useState<Record<string, string>>({
     price:
       'Стоимость услуги — от 3 500 ₽. Точная цена зависит от объёма работ и материалов. Расскажите подробнее о задаче — я помогу рассчитать стоимость.',
@@ -107,6 +119,24 @@ export function App() {
     setDraftSource('');
     setDraftEnabled(true);
     setTopicModalOpen(false);
+    setSaved(false);
+  };
+
+  const addCustomHandoffScenario = () => {
+    if (!scenarioTitleDraft.trim() || !scenarioDescriptionDraft.trim()) return;
+    setCustomHandoffConditions((current) => [
+      ...current,
+      {
+        id: `${Date.now()}`,
+        title: scenarioTitleDraft.trim(),
+        description: scenarioDescriptionDraft.trim(),
+        enabled: scenarioEnabledDraft,
+      },
+    ]);
+    setScenarioTitleDraft('');
+    setScenarioDescriptionDraft('');
+    setScenarioEnabledDraft(true);
+    setHandoffScenarioModalOpen(false);
     setSaved(false);
   };
 
@@ -404,6 +434,57 @@ export function App() {
                   </div>
                 ))}
               </div>
+
+              <div className="custom-handoff">
+                <div className="custom-handoff__heading">
+                  <div>
+                    <H2 spaceBottom="8">Дополнительные сценарии</H2>
+                    <P color="text/secondary">
+                      Добавьте ситуации, в которых агент должен позвать вас в чат
+                    </P>
+                  </div>
+                  <Button
+                    preset="secondary"
+                    size="s"
+                    onClick={() => setHandoffScenarioModalOpen(true)}
+                  >
+                    Добавить сценарий
+                  </Button>
+                </div>
+
+                {customHandoffConditions.length === 0 ? (
+                  <div className="empty-state handoff-empty-state">
+                    <P size="s" color="text/secondary">
+                      Дополнительных сценариев пока нет
+                    </P>
+                  </div>
+                ) : (
+                  <div className="handoff-list handoff-list--single custom-handoff-list">
+                    {customHandoffConditions.map((condition) => (
+                      <div className="handoff-row" key={condition.id}>
+                        <div className="handoff-copy">
+                          <H3 spaceBottom="4">{condition.title}</H3>
+                          <P size="s" color="text/secondary">{condition.description}</P>
+                        </div>
+                        <Switcher
+                          checked={condition.enabled}
+                          onChange={() => {
+                            setCustomHandoffConditions((current) =>
+                              current.map((item) =>
+                                item.id === condition.id
+                                  ? { ...item, enabled: !item.enabled }
+                                  : item,
+                              ),
+                            );
+                            setSaved(false);
+                          }}
+                          aria-label={condition.title}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </section>
           </TabGroup.Panel>
         </TabGroup>
@@ -500,6 +581,70 @@ export function App() {
               onClick={addCustomTopic}
             >
               Добавить тему
+            </Button>
+          </div>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal
+        open={handoffScenarioModalOpen}
+        size="m"
+        onClose={() => setHandoffScenarioModalOpen(false)}
+        closeOnOverlayClick
+      >
+        <Modal.Header title="Добавить сценарий" />
+        <Modal.Content>
+          <div className="modal-form">
+            <label className="field">
+              <Span size="s">Название сценария</Span>
+              <Input
+                value={scenarioTitleDraft}
+                onChange={({ value }: { value: string }) => setScenarioTitleDraft(value)}
+                placeholder="Например, клиент просит особые условия"
+                clearable
+              />
+              <Span size="xs" color="text/secondary">
+                Коротко опишите ситуацию, в которой агент должен позвать вас
+              </Span>
+            </label>
+            <label className="field">
+              <Span size="s">Когда подключать вас</Span>
+              <Input
+                value={scenarioDescriptionDraft}
+                onChange={({ value }: { value: string }) => setScenarioDescriptionDraft(value)}
+                placeholder="Например, нужно согласовать нестандартный объём работ"
+                clearable
+              />
+              <Span size="xs" color="text/secondary">
+                Уточните условие, по которому агент распознает сценарий
+              </Span>
+            </label>
+            <div className="modal-switch">
+              <div>
+                <P>Включить сценарий сразу</P>
+                <P size="s" color="text/secondary">
+                  Если выключить, сценарий сохранится как черновик
+                </P>
+              </div>
+              <Switcher
+                checked={scenarioEnabledDraft}
+                onChange={() => setScenarioEnabledDraft((value) => !value)}
+                aria-label="Включить новый сценарий сразу"
+              />
+            </div>
+          </div>
+        </Modal.Content>
+        <Modal.Footer>
+          <div className="modal-actions">
+            <Button preset="secondary" onClick={() => setHandoffScenarioModalOpen(false)}>
+              Отмена
+            </Button>
+            <Button
+              preset="primary"
+              disabled={!scenarioTitleDraft.trim() || !scenarioDescriptionDraft.trim()}
+              onClick={addCustomHandoffScenario}
+            >
+              Добавить сценарий
             </Button>
           </div>
         </Modal.Footer>
