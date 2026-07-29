@@ -91,11 +91,16 @@ export function App() {
   const [handoffMessage, setHandoffMessage] = useState(defaultHandoffMessage);
   const [handoffDraft, setHandoffDraft] = useState(defaultHandoffMessage);
   const [handoffModalOpen, setHandoffModalOpen] = useState(false);
-  const defaultAnswerMessage =
-    'Стоимость услуги — от 3 500 ₽. Точная цена зависит от объёма работ и материалов. Расскажите, пожалуйста, подробнее о задаче — я помогу рассчитать стоимость.';
-  const [answerMessage, setAnswerMessage] = useState(defaultAnswerMessage);
-  const [answerDraft, setAnswerDraft] = useState(defaultAnswerMessage);
-  const [answerModalOpen, setAnswerModalOpen] = useState(false);
+  const [topicAnswers, setTopicAnswers] = useState<Record<string, string>>({
+    price:
+      'Стоимость услуги — от 3 500 ₽. Точная цена зависит от объёма работ и материалов. Расскажите подробнее о задаче — я помогу рассчитать стоимость.',
+    schedule:
+      'Ближайшее свободное время — в четверг после 16:00 или в субботу утром. Какой вариант вам удобнее?',
+    service:
+      'Работа занимает около двух дней. Используем материалы из вашего прайс-листа и даём гарантию 12 месяцев.',
+  });
+  const [activeAnswerTopicId, setActiveAnswerTopicId] = useState<string | null>(null);
+  const [answerDraft, setAnswerDraft] = useState('');
 
   const toggleTopic = (id: string) => {
     setEnabledTopics((current) =>
@@ -274,23 +279,22 @@ export function App() {
                   Выберите темы, по которым агент сможет консультировать клиентов от вашего имени
                 </P>
               </div>
-              <div className="answers-grid">
-                <div className="answers-settings">
-                  <div className="section-heading section-heading--row topics-heading">
-                    <div>
-                      <H2 spaceBottom="8">Базовый набор тем</H2>
-                      <P color="text/secondary">Готовые темы, которые подходят большинству исполнителей услуг</P>
-                    </div>
-                    <Span size="s" color="text/secondary">
-                      {enabledTopics.length} из {initialTopics.length} включено
-                    </Span>
-                  </div>
+              <div className="section-heading section-heading--row topics-heading">
+                <div>
+                  <H2 spaceBottom="8">Базовый набор тем</H2>
+                  <P color="text/secondary">Готовые темы, которые подходят большинству исполнителей услуг</P>
+                </div>
+                <Span size="s" color="text/secondary">
+                  {enabledTopics.length} из {initialTopics.length} включено
+                </Span>
+              </div>
 
-                  <div className="topic-list">
-                    {initialTopics.map((topic) => {
-                      const checked = enabledTopics.includes(topic.id);
-                      return (
-                        <div className="topic-row" key={topic.id}>
+              <div className="topic-answer-list">
+                {initialTopics.map((topic) => {
+                  const checked = enabledTopics.includes(topic.id);
+                  return (
+                    <div className="topic-answer-pair" key={topic.id}>
+                      <div className="topic-row topic-row--standalone">
                           <Switcher
                             checked={checked}
                             onChange={() => toggleTopic(topic.id)}
@@ -309,12 +313,34 @@ export function App() {
                             </div>
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
+                      <aside className="topic-answer-card">
+                        <div className="topic-answer-card__heading">
+                          <div>
+                            <H3 spaceBottom="4">Как агент отвечает</H3>
+                            <P size="xs" color="text/secondary">{topic.title}</P>
+                          </div>
+                          <Button
+                            preset="secondary"
+                            size="s"
+                            onClick={() => {
+                              setActiveAnswerTopicId(topic.id);
+                              setAnswerDraft(topicAnswers[topic.id]);
+                            }}
+                          >
+                            Редактировать
+                          </Button>
+                        </div>
+                        <div className="message message--agent topic-answer-card__message">
+                          <P size="s">{topicAnswers[topic.id]}</P>
+                        </div>
+                      </aside>
+                    </div>
+                  );
+                })}
+              </div>
 
-                  <div className="custom-topics">
-                    <div className="custom-topics__heading">
+              <div className="custom-topics">
+                <div className="custom-topics__heading">
                       <div>
                         <H2 spaceBottom="8">Расширенный набор тем</H2>
                         <P color="text/secondary">
@@ -364,38 +390,6 @@ export function App() {
                         ))}
                       </div>
                     )}
-                  </div>
-                </div>
-
-                <aside className="answer-preview">
-                  <div className="preview-heading">
-                    <div>
-                      <H3 spaceBottom="4">Как агент отвечает</H3>
-                      <P size="s" color="text/secondary">Пример ответа по выбранным темам</P>
-                    </div>
-                    <Button
-                      preset="secondary"
-                      size="s"
-                      onClick={() => {
-                        setAnswerDraft(answerMessage);
-                        setAnswerModalOpen(true);
-                      }}
-                    >
-                      Редактировать
-                    </Button>
-                  </div>
-                  <div className="chat-preview">
-                    <div className="message message--buyer">
-                      <P size="s">Сколько будет стоить услуга?</P>
-                    </div>
-                    <div className="message message--agent">
-                      <P size="s">{answerMessage}</P>
-                    </div>
-                  </div>
-                  <P size="xs" color="text/secondary">
-                    Агент использует этот текст как основу и дополняет его данными из выбранных источников
-                  </P>
-                </aside>
               </div>
             </section>
           </TabGroup.Panel>
@@ -562,12 +556,16 @@ export function App() {
       </Modal>
 
       <Modal
-        open={answerModalOpen}
+        open={activeAnswerTopicId !== null}
         size="m"
-        onClose={() => setAnswerModalOpen(false)}
+        onClose={() => setActiveAnswerTopicId(null)}
         closeOnOverlayClick
       >
-        <Modal.Header title="Ответ агента" />
+        <Modal.Header
+          title={`Ответ: ${
+            initialTopics.find((topic) => topic.id === activeAnswerTopicId)?.title ?? ''
+          }`}
+        />
         <Modal.Content>
           <div className="modal-form">
             <label className="field">
@@ -596,15 +594,20 @@ export function App() {
         </Modal.Content>
         <Modal.Footer>
           <div className="modal-actions">
-            <Button preset="secondary" onClick={() => setAnswerModalOpen(false)}>
+            <Button preset="secondary" onClick={() => setActiveAnswerTopicId(null)}>
               Отмена
             </Button>
             <Button
               preset="primary"
               disabled={!answerDraft.trim()}
               onClick={() => {
-                setAnswerMessage(answerDraft.trim());
-                setAnswerModalOpen(false);
+                if (activeAnswerTopicId) {
+                  setTopicAnswers((current) => ({
+                    ...current,
+                    [activeAnswerTopicId]: answerDraft.trim(),
+                  }));
+                }
+                setActiveAnswerTopicId(null);
                 setSaved(false);
               }}
             >
