@@ -152,6 +152,15 @@ export function App() {
             </span>
             <span>Avito Pro</span>
           </div>
+          <div className="mobile-header-actions" aria-label="Действия">
+            <button type="button" aria-label="Сообщения">
+              <ChatOutlineIcon size={24} ariaHidden />
+              <span className="mobile-notification-dot" />
+            </button>
+            <button type="button" aria-label="Профиль">
+              <span className="header-avatar">АС</span>
+            </button>
+          </div>
           <nav className="product-nav" aria-label="Разделы Авито">
             <span>Бизнес360</span>
             <span>Авто</span>
@@ -425,6 +434,29 @@ export function App() {
         </main>
       </div>
       </div>
+
+      <nav className="mobile-bottom-nav" aria-label="Мобильная навигация">
+        <button type="button">
+          <HomeIcon size={22} ariaHidden />
+          <span>Главная</span>
+        </button>
+        <button type="button">
+          <ServicesIcon size={22} ariaHidden />
+          <span>Услуги</span>
+        </button>
+        <button className="mobile-bottom-nav__active" type="button" aria-current="page">
+          <AssistantChatsIcon size={22} ariaHidden />
+          <span>AI-агент</span>
+        </button>
+        <button type="button">
+          <ChatOutlineIcon size={22} ariaHidden />
+          <span>Чаты</span>
+        </button>
+        <button type="button">
+          <SettingsOutlineIcon size={22} ariaHidden />
+          <span>Профиль</span>
+        </button>
+      </nav>
 
       <Modal
         open={topicModalOpen}
