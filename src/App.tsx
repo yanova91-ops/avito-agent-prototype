@@ -349,7 +349,7 @@ export function App() {
                       </div>
                       <Button
                         preset="secondary"
-                        size="m"
+                        size="s"
                         onClick={() => setTopicModalOpen(true)}
                       >
                         Выбрать тему
