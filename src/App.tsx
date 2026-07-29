@@ -91,6 +91,11 @@ export function App() {
   const [handoffMessage, setHandoffMessage] = useState(defaultHandoffMessage);
   const [handoffDraft, setHandoffDraft] = useState(defaultHandoffMessage);
   const [handoffModalOpen, setHandoffModalOpen] = useState(false);
+  const defaultAnswerMessage =
+    'Стоимость услуги — от 3 500 ₽. Точная цена зависит от объёма работ и материалов. Расскажите, пожалуйста, подробнее о задаче — я помогу рассчитать стоимость.';
+  const [answerMessage, setAnswerMessage] = useState(defaultAnswerMessage);
+  const [answerDraft, setAnswerDraft] = useState(defaultAnswerMessage);
+  const [answerModalOpen, setAnswerModalOpen] = useState(false);
 
   const toggleTopic = (id: string) => {
     setEnabledTopics((current) =>
@@ -269,94 +274,128 @@ export function App() {
                   Выберите темы, по которым агент сможет консультировать клиентов от вашего имени
                 </P>
               </div>
-              <div className="section-heading section-heading--row topics-heading">
-                <div>
-                  <H2 spaceBottom="8">Базовый набор тем</H2>
-                  <P color="text/secondary">Готовые темы, которые подходят большинству исполнителей услуг</P>
-                </div>
-                <Span size="s" color="text/secondary">
-                  {enabledTopics.length} из {initialTopics.length} включено
-                </Span>
-              </div>
-
-              <div className="topic-list">
-                {initialTopics.map((topic) => {
-                  const checked = enabledTopics.includes(topic.id);
-                  return (
-                    <div className="topic-row" key={topic.id}>
-                      <Switcher
-                        checked={checked}
-                        onChange={() => toggleTopic(topic.id)}
-                        aria-label={`Включить тему ${topic.title}`}
-                      />
-                      <div className="topic-copy">
-                        <H3 spaceBottom="4">{topic.title}</H3>
-                        <P size="s" color="text/secondary">{topic.description}</P>
-                      </div>
-                      <div className="topic-sources">
-                        <Span size="xs" color="text/secondary">Источник данных</Span>
-                        <div className="source-chips">
-                          {topic.sources.map((source) => (
-                            <span className="source-chip" key={source}>{source}</span>
-                          ))}
-                        </div>
-                      </div>
+              <div className="answers-grid">
+                <div className="answers-settings">
+                  <div className="section-heading section-heading--row topics-heading">
+                    <div>
+                      <H2 spaceBottom="8">Базовый набор тем</H2>
+                      <P color="text/secondary">Готовые темы, которые подходят большинству исполнителей услуг</P>
                     </div>
-                  );
-                })}
-              </div>
-
-              <div className="custom-topics">
-                <div className="custom-topics__heading">
-                  <div>
-                    <H2 spaceBottom="8">Расширенный набор тем</H2>
-                    <P color="text/secondary">
-                      Добавьте вопросы, которые важны именно для вашей услуги
-                    </P>
+                    <Span size="s" color="text/secondary">
+                      {enabledTopics.length} из {initialTopics.length} включено
+                    </Span>
                   </div>
-                  <Button
-                    preset="secondary"
-                    size="m"
-                    onClick={() => setTopicModalOpen(true)}
-                  >
-                    Выбрать тему
-                  </Button>
+
+                  <div className="topic-list">
+                    {initialTopics.map((topic) => {
+                      const checked = enabledTopics.includes(topic.id);
+                      return (
+                        <div className="topic-row" key={topic.id}>
+                          <Switcher
+                            checked={checked}
+                            onChange={() => toggleTopic(topic.id)}
+                            aria-label={`Включить тему ${topic.title}`}
+                          />
+                          <div className="topic-copy">
+                            <H3 spaceBottom="4">{topic.title}</H3>
+                            <P size="s" color="text/secondary">{topic.description}</P>
+                          </div>
+                          <div className="topic-sources">
+                            <Span size="xs" color="text/secondary">Источник данных</Span>
+                            <div className="source-chips">
+                              {topic.sources.map((source) => (
+                                <span className="source-chip" key={source}>{source}</span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="custom-topics">
+                    <div className="custom-topics__heading">
+                      <div>
+                        <H2 spaceBottom="8">Расширенный набор тем</H2>
+                        <P color="text/secondary">
+                          Добавьте вопросы, которые важны именно для вашей услуги
+                        </P>
+                      </div>
+                      <Button
+                        preset="secondary"
+                        size="m"
+                        onClick={() => setTopicModalOpen(true)}
+                      >
+                        Выбрать тему
+                      </Button>
+                    </div>
+
+                    {customTopics.length === 0 ? (
+                      <div className="empty-state">
+                        <P size="s" color="text/secondary">
+                          Дополнительных тем пока нет
+                        </P>
+                      </div>
+                    ) : (
+                      <div className="topic-list custom-topic-list">
+                        {customTopics.map((topic) => (
+                          <div className="topic-row" key={topic.id}>
+                            <Switcher
+                              checked={topic.enabled}
+                              onChange={() => {
+                                setCustomTopics((current) =>
+                                  current.map((item) =>
+                                    item.id === topic.id ? { ...item, enabled: !item.enabled } : item,
+                                  ),
+                                );
+                                setSaved(false);
+                              }}
+                              aria-label={`Включить тему ${topic.title}`}
+                            />
+                            <div className="topic-copy">
+                              <H3 spaceBottom="4">{topic.title}</H3>
+                              <P size="s" color="text/secondary">Добавлено вручную</P>
+                            </div>
+                            <div className="topic-sources">
+                              <Span size="xs" color="text/secondary">Источник данных</Span>
+                              <span className="source-chip">{topic.source}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                {customTopics.length === 0 ? (
-                  <div className="empty-state">
-                    <P size="s" color="text/secondary">
-                      Дополнительных тем пока нет
-                    </P>
+                <aside className="answer-preview">
+                  <div className="preview-heading">
+                    <div>
+                      <H3 spaceBottom="4">Как агент отвечает</H3>
+                      <P size="s" color="text/secondary">Пример ответа по выбранным темам</P>
+                    </div>
+                    <Button
+                      preset="secondary"
+                      size="s"
+                      onClick={() => {
+                        setAnswerDraft(answerMessage);
+                        setAnswerModalOpen(true);
+                      }}
+                    >
+                      Редактировать
+                    </Button>
                   </div>
-                ) : (
-                  <div className="topic-list custom-topic-list">
-                    {customTopics.map((topic) => (
-                      <div className="topic-row" key={topic.id}>
-                        <Switcher
-                          checked={topic.enabled}
-                          onChange={() => {
-                            setCustomTopics((current) =>
-                              current.map((item) =>
-                                item.id === topic.id ? { ...item, enabled: !item.enabled } : item,
-                              ),
-                            );
-                            setSaved(false);
-                          }}
-                          aria-label={`Включить тему ${topic.title}`}
-                        />
-                        <div className="topic-copy">
-                          <H3 spaceBottom="4">{topic.title}</H3>
-                          <P size="s" color="text/secondary">Добавлено вручную</P>
-                        </div>
-                        <div className="topic-sources">
-                          <Span size="xs" color="text/secondary">Источник данных</Span>
-                          <span className="source-chip">{topic.source}</span>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="chat-preview">
+                    <div className="message message--buyer">
+                      <P size="s">Сколько будет стоить услуга?</P>
+                    </div>
+                    <div className="message message--agent">
+                      <P size="s">{answerMessage}</P>
+                    </div>
                   </div>
-                )}
+                  <P size="xs" color="text/secondary">
+                    Агент использует этот текст как основу и дополняет его данными из выбранных источников
+                  </P>
+                </aside>
               </div>
             </section>
           </TabGroup.Panel>
@@ -517,6 +556,59 @@ export function App() {
               onClick={addCustomTopic}
             >
               Добавить тему
+            </Button>
+          </div>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal
+        open={answerModalOpen}
+        size="m"
+        onClose={() => setAnswerModalOpen(false)}
+        closeOnOverlayClick
+      >
+        <Modal.Header title="Ответ агента" />
+        <Modal.Content>
+          <div className="modal-form">
+            <label className="field">
+              <Span size="s">Текст ответа</Span>
+              <textarea
+                className="message-editor"
+                value={answerDraft}
+                maxLength={500}
+                onChange={(event) => setAnswerDraft(event.target.value)}
+                aria-label="Текст ответа агента"
+              />
+              <div className="field-meta">
+                <Span size="xs" color="text/secondary">
+                  Напишите готовый ответ или основу, которую агент дополнит данными из источников
+                </Span>
+                <Span size="xs" color="text/secondary">{answerDraft.length} / 500</Span>
+              </div>
+            </label>
+            <div className="message-preview">
+              <Span size="xs" color="text/secondary">Предпросмотр</Span>
+              <div className="message message--agent">
+                <P size="s">{answerDraft || 'Введите текст ответа'}</P>
+              </div>
+            </div>
+          </div>
+        </Modal.Content>
+        <Modal.Footer>
+          <div className="modal-actions">
+            <Button preset="secondary" onClick={() => setAnswerModalOpen(false)}>
+              Отмена
+            </Button>
+            <Button
+              preset="primary"
+              disabled={!answerDraft.trim()}
+              onClick={() => {
+                setAnswerMessage(answerDraft.trim());
+                setAnswerModalOpen(false);
+                setSaved(false);
+              }}
+            >
+              Сохранить ответ
             </Button>
           </div>
         </Modal.Footer>
